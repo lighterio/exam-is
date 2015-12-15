@@ -1,5 +1,5 @@
 'use strict'
-/* global describe it xit beforeEach is mock unmock */
+/* global describe it beforeEach afterEach is mock unmock */
 var assert = require('assert')
 
 describe('is', function () {
@@ -27,12 +27,32 @@ describe('is', function () {
     is.function(is)
   })
 
-  xit('.fail throws an error', function (done) {
+  it('.pass emits a value', function () {
     unmock(is)
+    mock(is, {emit: mock.args()})
+    is.pass('OK')
+    assert.equal(is.emit.value[0][0], 'result')
+    assert.equal(is.emit.value[0][1], 'OK')
+    unmock(is)
+  })
+
+  it('.pass emits "pass" by default', function () {
+    unmock(is)
+    mock(is, {emit: mock.args()})
+    is.pass()
+    assert.equal(is.emit.value[0][0], 'result')
+    assert.equal(is.emit.value[0][1], 'pass')
+    unmock(is)
+  })
+
+  it('.fail throws an error', function (done) {
+    unmock(is)
+    mock(is, {emit: undefined})
     try {
       is.fail(['something', 'is not', 'working'], is.fail, 'something', 'working', 'is not')
     } catch (e) {
       is(e.message, 'something is not working')
+      unmock(is)
       done()
     }
   })
@@ -47,23 +67,20 @@ describe('is', function () {
     is.fail()
   })
 
-  xit('.stringify works in all cases', function () {
+  it('.stringify works in all cases', function () {
     unmock(is)
     is(is.stringify({n: null}), '{n:null}')
     // Try classes and max depth (stuff that's not in other tests).
     function Thing () {
       this.what = 'what?'
     }
-    Thing.prototype.hi = function () {
-      alert(this.what)
-    }
     var thing = new Thing()
-    var hi = Thing.prototype.hi.toString()
+    thing.hi = function () { return 1 }
     is(is.stringify(Thing), Thing.toString())
-    is(is.stringify(thing), '{what:\"what?\",hi:' + Thing.prototype.hi.toString() + '}')
-    is(is.stringify({for:1}), '{for:1}')
-    is(is.stringify([[[[[[[[[[[1]]]]]]]]]]]), '[[[[[[[[[[[1]]]]]]]]]]]')
-    is(is.stringify([[[[[[[[[[[{}]]]]]]]]]]]), '[[[[[[[[[[[{}]]]]]]]]]]]')
+    is(is.stringify(thing), '{what:\"what?\",hi:' + thing.hi.toString() + '}')
+    is(is.stringify({for: 1}), '{for:1}')
+    is(is.stringify([[[[[[1]]]]]]), '[[[[["[Array]"]]]]]')
+    is(is.stringify([[[[[{}]]]]]), '[[[[["[Object]"]]]]]')
   })
 
   it('.is asserts strict equality', function () {
@@ -99,7 +116,6 @@ describe('is', function () {
   })
 
   it('.same asserts deep equality', function () {
-    var n = 0
     is(is.same, is.deepEqual); pass()
     is.same(null, null); pass()
     is.same(undefined, undefined); pass()
@@ -124,11 +140,14 @@ describe('is', function () {
     d.c = d
     d.o = {d: c}
     is.same(c, d); pass()
-    is.same(function a () { hello() }, function a () { hello() }); pass()
+    is.same(function a () { return 1 }, function a () { return 1 }); pass()
     is.same(1, 2); fail()
+    is.same(/a/, /a/); pass()
+    is.same(/a/, new RegExp('a')); pass()
+    is.same(/a/gmi, new RegExp('a', 'gmi')); pass()
   })
 
-  xit('.notSame asserts deep inequality', function () {
+  it('.notSame asserts deep inequality', function () {
     is.notSame({a: 1}, {a: '1'}); pass()
     is.notSame('a', 'b'); pass()
     is.notSame({a: 1, b: 2}, {b: 1, a: 2}); pass()
@@ -682,9 +701,4 @@ describe('is', function () {
   afterEach(function () {
     unmock(is)
   })
-
-  after(function () {
-    unmock(is)
-  })
-
 })

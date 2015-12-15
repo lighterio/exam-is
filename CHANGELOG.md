@@ -1,7 +1,7 @@
-# Exam Change Log
+# exam-is Change Log
 
 ## v1.3.0 - 2015-11-16
-* `minor` Made exam-cover and exam-coveralls accept istanbul arguments.
+* `minor` Made exam-is-cover and exam-is-coveralls accept istanbul arguments.
 
 ## v1.2.2 - 2015-11-12
 * `patch` Made JSON.stringify accept a numeric 3rd argument.

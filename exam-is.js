@@ -11,8 +11,7 @@ function is (actual, expected) {
 module.exports = is.is = is
 
 // Generate non-strict JSON.
-require('../common/json/scriptify')
-var js = JSON.scriptify
+var js = require('lighter-json').scriptify
 Object.defineProperty(is, 'stringify', {
   enumerable: false,
   value: js
@@ -66,13 +65,13 @@ is.not = function (actual, expected) {
 }
 
 is.equal = function (actual, expected) {
-  var fn = (actual == expected) ? is.pass : is.fail
+  var fn = (actual == expected) ? is.pass : is.fail // eslint-disable-line
   var op = '=='
   return fn([js(actual), op, js(expected)], is.equal, actual, expected)
 }
 
 is.notEqual = function (actual, expected) {
-  var fn = (actual != expected) ? is.pass : is.fail
+  var fn = (actual != expected) ? is.pass : is.fail // eslint-disable-line
   var op = '!='
   return fn([js(actual), op, js(expected)], is.notEqual, actual, expected)
 }
